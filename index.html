@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Đặt hàng — Đắng Mà Ghiền</title>
+<style>
+:root {
+  --teal:#1B6B4A; --teal-d:#134e36; --teal-l:#D5EFE4;
+  --red:#C0392B; --red-l:#FDEDEC;
+  --gray:#2C3E50; --gray-l:#F4F6F7; --gray-m:#7F8C8D;
+  --white:#fff; --radius:12px; --shadow:0 2px 16px rgba(0,0,0,.10);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Segoe UI',Arial,sans-serif;background:#eaf3ee;min-height:100vh;}
+
+.header{background:linear-gradient(135deg,var(--teal-d),var(--teal));color:#fff;padding:16px 18px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,.2);}
+.header-logo{font-size:26px;}
+.header-title{flex:1;}
+.header-title h1{font-size:16px;font-weight:700;}
+.header-title p{font-size:11px;opacity:.8;margin-top:1px;}
+.deadline{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.3);border-radius:20px;padding:4px 11px;font-size:11px;font-weight:600;white-space:nowrap;}
+
+.container{max-width:480px;margin:0 auto;padding:14px 12px 80px;}
+
+.card{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:12px;overflow:hidden;}
+.card-hdr{padding:11px 15px;font-size:13px;font-weight:700;color:var(--teal);border-bottom:1px solid #eee;display:flex;align-items:center;gap:7px;background:#f8fffc;}
+.card-body{padding:15px;}
+
+.field{margin-bottom:13px;}
+.field:last-child{margin-bottom:0;}
+label{display:block;font-size:12px;font-weight:600;color:var(--gray);margin-bottom:5px;}
+label .req{color:var(--red);}
+select,input,textarea{width:100%;padding:10px 12px;border:1.5px solid #ddd;border-radius:9px;font-size:14px;color:var(--gray);background:#fff;outline:none;font-family:inherit;transition:border .2s,box-shadow .2s;-webkit-appearance:none;}
+select:focus,input:focus,textarea:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(27,107,74,.10);}
+.helper{font-size:11px;color:var(--gray-m);margin-top:4px;}
+
+.item-card{background:var(--gray-l);border-radius:10px;padding:12px;margin-bottom:10px;position:relative;}
+.item-card-hdr{font-size:12px;font-weight:700;color:var(--teal);margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.remove-btn{background:var(--red-l);color:var(--red);border:none;border-radius:7px;width:26px;height:26px;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.remove-btn:hover{background:var(--red);color:#fff;}
+
+.dvt-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600;background:#EBF5FB;color:#1A5276;margin-top:5px;}
+
+.add-btn{width:100%;padding:11px;background:#fff;border:2px dashed var(--teal);color:var(--teal);border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:all .2s;}
+.add-btn:hover:not(:disabled){background:var(--teal-l);}
+.add-btn:disabled{opacity:.4;cursor:not-allowed;}
+
+.summary{background:var(--teal-l);border:1.5px solid var(--teal);border-radius:10px;padding:11px 14px;display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
+.summary span{font-size:13px;color:var(--gray);}
+.summary strong{color:var(--teal);font-size:14px;}
+
+.submit-btn{width:100%;padding:15px;background:linear-gradient(135deg,var(--teal-d),var(--teal));color:#fff;border:none;border-radius:var(--radius);font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 4px 14px rgba(27,107,74,.35);transition:transform .15s,box-shadow .15s;display:flex;align-items:center;justify-content:center;gap:8px;}
+.submit-btn:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 6px 20px rgba(27,107,74,.4);}
+.submit-btn:disabled{opacity:.6;cursor:not-allowed;transform:none;}
+
+.empty{text-align:center;padding:20px;color:var(--gray-m);font-size:13px;}
+.empty span{font-size:30px;display:block;margin-bottom:6px;}
+
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(100px);background:var(--gray);color:#fff;padding:12px 22px;border-radius:30px;font-size:13px;font-weight:600;transition:transform .4s cubic-bezier(.175,.885,.32,1.1);z-index:999;pointer-events:none;box-shadow:0 4px 16px rgba(0,0,0,.25);}
+.toast.show{transform:translateX(-50%) translateY(0);}
+.toast.ok{background:var(--teal);}
+.toast.err{background:var(--red);}
+
+.success-wrap{display:none;text-align:center;padding:50px 20px;}
+.success-wrap .icon{font-size:64px;margin-bottom:16px;}
+.success-wrap h2{color:var(--teal);font-size:20px;margin-bottom:8px;}
+.success-wrap p{color:var(--gray-m);font-size:14px;line-height:1.6;margin-bottom:24px;}
+.new-btn{padding:12px 28px;background:var(--teal);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-logo">🍲</div>
+  <div class="header-title">
+    <h1>Phiếu Đặt Hàng — Đắng Mà Ghiền</h1>
+    <p>Điền và gửi trước 21:30 hàng ngày</p>
+  </div>
+  <div class="deadline" id="clock">⏰ --:--</div>
+</div>
+
+<div class="container" id="form-wrap">
+
+  <div class="card">
+    <div class="card-hdr">🏪 Thông tin chi nhánh</div>
+    <div class="card-body">
+      <div class="field">
+        <label>Chi nhánh <span class="req">*</span></label>
+        <select id="chinhanh">
+          <option value="">— Chọn chi nhánh —</option>
+          <option>CN01 — Quận 1</option>
+          <option>CN02 — Quận 3</option>
+          <option>CN03 — Quận 5</option>
+          <option>CN04 — Quận 7</option>
+          <option>CN05 — Quận 10</option>
+          <option>CN06 — Bình Thạnh</option>
+          <option>CN07 — Tân Bình</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Người đặt hàng <span class="req">*</span></label>
+        <input type="text" id="nguoidat" placeholder="Tên quản lý chi nhánh">
+      </div>
+      <div class="field" style="margin-bottom:0">
+        <label>Nhóm hàng <span class="req">*</span></label>
+        <select id="category" onchange="onCatChange()">
+          <option value="">— Chọn nhóm hàng —</option>
+          <option value="fresh">Daily — Tươi sống</option>
+          <option value="spice">Weekly — Gia vị khô</option>
+          <option value="water">Weekly — Nước & Đồ uống</option>
+          <option value="ccdc">Monthly — CCDC</option>
+        </select>
+        <div class="helper" id="cat-helper"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-hdr">
+      📦 Mặt hàng cần đặt
+      <span id="item-count" style="background:var(--teal);color:#fff;border-radius:20px;padding:1px 10px;font-size:11px;">0 món</span>
+    </div>
+    <div class="card-body">
+      <div id="items-list">
+        <div class="empty"><span>📋</span>Chọn nhóm hàng rồi thêm mặt hàng</div>
+      </div>
+      <button class="add-btn" id="add-btn" onclick="addItem()" disabled>＋ Thêm mặt hàng vào đơn</button>
+    </div>
+  </div>
+
+  <div class="summary" id="summary" style="display:none">
+    <span id="sum-label">0 mặt hàng</span>
+    <strong id="sum-total"></strong>
+  </div>
+
+  <div class="card">
+    <div class="card-hdr">📝 Ghi chú đơn hàng</div>
+    <div class="card-body">
+      <textarea id="ghichu" rows="2" placeholder="VD: giao trước 7h sáng / tiệc 50 khách ngày mai / cần thêm rau..."></textarea>
+    </div>
+  </div>
+
+  <button class="submit-btn" id="submit-btn" onclick="submitOrder()">
+    📤 Gửi đơn hàng
+  </button>
+</div>
+
+<div class="container" id="success-wrap" style="display:none">
+  <div class="success-wrap" style="display:block">
+    <div class="icon">✅</div>
+    <h2>Đơn đã gửi thành công!</h2>
+    <p id="success-detail">Phòng mua hàng sẽ xử lý trước 22:00.</p>
+    <button class="new-btn" onclick="resetForm()">＋ Đặt thêm đơn mới</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ══════════════════════════════════════
+// ⚙️ CẤU HÌNH — thay URL này sau khi có n8n webhook
+// ══════════════════════════════════════
+const N8N_WEBHOOK = "REPLACE_WITH_YOUR_N8N_WEBHOOK_URL";
+
+// ══════════════════════════════════════
+// DANH MỤC HÀNG (cập nhật theo thực tế ĐMG)
+// ══════════════════════════════════════
+const PRODUCTS = {
+  fresh:[
+    {ma:"NL-001", ten:"Heo xương ống lạnh",   dvt:"Kg"},
+    {ma:"NL-002", ten:"Heo xương ống nóng",   dvt:"Kg"},
+    {ma:"NL-003", ten:"Heo sườn chìa",        dvt:"Kg"},
+    {ma:"NL-004", ten:"Cá thác lác nạo",      dvt:"Kg"},
+    {ma:"NL-005", ten:"Bún tươi",             dvt:"Kg"},
+    {ma:"NL-006", ten:"Gừng củ",              dvt:"Kg"},
+    {ma:"NL-007", ten:"Sả cây",               dvt:"Kg"},
+    {ma:"NL-008", ten:"Hành tây",             dvt:"Kg"},
+    {ma:"NL-009", ten:"Rau cải xanh",         dvt:"Kg"},
+    {ma:"NL-010", ten:"Rau muống",            dvt:"Kg"},
+    {ma:"NL-011", ten:"Rau thơm tổng hợp",   dvt:"Bó"},
+    {ma:"NL-012", ten:"Nấm các loại",         dvt:"Kg"},
+    {ma:"NL-013", ten:"Đậu hũ",               dvt:"Kg"},
+    {ma:"NL-014", ten:"Trứng",                dvt:"Cái"},
+  ],
+  spice:[
+    {ma:"GV-001", ten:"Sa tế",                dvt:"Kg"},
+    {ma:"GV-002", ten:"Tương hoisin",         dvt:"Chai"},
+    {ma:"GV-003", ten:"Nước mắm",            dvt:"Chai"},
+    {ma:"GV-004", ten:"Gia vị lẩu tổng hợp",dvt:"Gói"},
+    {ma:"GV-005", ten:"Đường",               dvt:"Kg"},
+    {ma:"GV-006", ten:"Muối",                dvt:"Kg"},
+    {ma:"GV-007", ten:"Bột ngọt",            dvt:"Kg"},
+  ],
+  water:[
+    {ma:"NU-001", ten:"Nước suối 500ml",      dvt:"Thùng"},
+    {ma:"NU-002", ten:"Nước ngọt lon",       dvt:"Thùng"},
+    {ma:"NU-003", ten:"Bia chai/lon",        dvt:"Thùng"},
+    {ma:"NU-004", ten:"Đá viên",             dvt:"Túi"},
+  ],
+  ccdc:[
+    {ma:"CC-001", ten:"Khăn lạnh",           dvt:"Cuộn"},
+    {ma:"CC-002", ten:"Gas lon",             dvt:"Bình"},
+    {ma:"CC-003", ten:"Hộp takeaway",        dvt:"Thùng"},
+    {ma:"CC-004", ten:"Bao đũa dùng 1 lần", dvt:"Thùng"},
+    {ma:"CC-005", ten:"Dụng cụ bếp phụ",    dvt:"Cái"},
+  ],
+};
+
+const CAT_LABEL = {
+  fresh:"Daily — Tươi sống",
+  spice:"Weekly — Gia vị khô",
+  water:"Weekly — Nước & Đồ uống",
+  ccdc:"Monthly — CCDC"
+};
+
+let items = [];
+let currentCat = "";
+
+// Clock
+function updateClock(){
+  const now = new Date();
+  const h = String(now.getHours()).padStart(2,"0");
+  const m = String(now.getMinutes()).padStart(2,"0");
+  const el = document.getElementById("clock");
+  const late = now.getHours() > 21 || (now.getHours()===21 && now.getMinutes()>=30);
+  el.textContent = late ? `⚠️ ${h}:${m} Đã quá giờ!` : `⏰ ${h}:${m}`;
+  el.style.background = late ? "rgba(192,57,43,.7)" : "rgba(255,255,255,.18)";
+}
+setInterval(updateClock,1000); updateClock();
+
+function onCatChange(){
+  currentCat = document.getElementById("category").value;
+  const prods = PRODUCTS[currentCat]||[];
+  document.getElementById("cat-helper").textContent =
+    currentCat ? `${prods.length} mặt hàng trong nhóm này` : "";
+  document.getElementById("add-btn").disabled = !currentCat;
+  items = [];
+  renderItems();
+}
+
+function addItem(){
+  if(!currentCat) return;
+  items.push({ma:"", slt:"", sldat:"", note:""});
+  renderItems();
+  setTimeout(()=>{
+    const cards = document.querySelectorAll(".item-card");
+    cards[cards.length-1]?.scrollIntoView({behavior:"smooth",block:"nearest"});
+  },100);
+}
+
+function removeItem(i){ items.splice(i,1); renderItems(); }
+
+function onChange(i, field, val){
+  items[i][field] = val;
+  renderItems();
+}
+
+function renderItems(){
+  const list = document.getElementById("items-list");
+  const prods = PRODUCTS[currentCat]||[];
+  const filled = items.filter(x=>x.ma);
+  document.getElementById("item-count").textContent = `${filled.length} món`;
+
+  if(items.length===0){
+    list.innerHTML='<div class="empty"><span>📋</span>Chưa có mặt hàng nào trong đơn</div>';
+    document.getElementById("summary").style.display="none";
+    return;
+  }
+
+  list.innerHTML = items.map((item,i)=>{
+    const prod = prods.find(p=>p.ma===item.ma);
+    const dvt = prod ? prod.dvt : "";
+    return `
+    <div class="item-card">
+      <div class="item-card-hdr">
+        <span>Mặt hàng ${i+1}</span>
+        <button class="remove-btn" onclick="removeItem(${i})">×</button>
+      </div>
+
+      <div class="field" style="margin-bottom:10px">
+        <label>Chọn mặt hàng <span class="req">*</span></label>
+        <select onchange="onChange(${i},'ma',this.value)">
+          <option value="">— Chọn —</option>
+          ${prods.map(p=>`<option value="${p.ma}" ${item.ma===p.ma?"selected":""}>${p.ma} — ${p.ten}</option>`).join("")}
+        </select>
+        ${dvt ? `<span class="dvt-badge">📐 Đơn vị: ${dvt}</span>` : ""}
+      </div>
+
+      <div class="grid2">
+        <div class="field" style="margin-bottom:0">
+          <label>SL tồn kho (${dvt||"đvt"})</label>
+          <input type="number" min="0" placeholder="0" value="${item.slt}"
+            oninput="onChange(${i},'slt',this.value)"
+            style="border-color:#ddd">
+        </div>
+        <div class="field" style="margin-bottom:0">
+          <label>SL cần đặt (${dvt||"đvt"}) <span class="req">*</span></label>
+          <input type="number" min="0" placeholder="Nhập SL" value="${item.sldat}"
+            oninput="onChange(${i},'sldat',this.value)"
+            style="border-color:var(--teal);font-weight:700;background:#f8fffc">
+        </div>
+      </div>
+    </div>`;
+  }).join("");
+
+  // Summary
+  const readyItems = filled.filter(x=>x.sldat && parseFloat(x.sldat)>0);
+  if(filled.length>0){
+    document.getElementById("summary").style.display="flex";
+    document.getElementById("sum-label").textContent = `${filled.length} mặt hàng`;
+    document.getElementById("sum-total").textContent =
+      `${readyItems.length} món có SL đặt`;
+  } else {
+    document.getElementById("summary").style.display="none";
+  }
+}
+
+function toast(msg, type="ok"){
+  const t=document.getElementById("toast");
+  t.textContent=msg; t.className=`toast ${type}`;
+  setTimeout(()=>t.classList.add("show"),10);
+  setTimeout(()=>t.classList.remove("show"),3200);
+}
+
+async function submitOrder(){
+  const cn   = document.getElementById("chinhanh").value;
+  const nd   = document.getElementById("nguoidat").value.trim();
+  const cat  = document.getElementById("category").value;
+  const note = document.getElementById("ghichu").value.trim();
+
+  if(!cn)  { toast("⚠️ Chưa chọn chi nhánh","err"); return; }
+  if(!nd)  { toast("⚠️ Chưa nhập tên người đặt","err"); return; }
+  if(!cat) { toast("⚠️ Chưa chọn nhóm hàng","err"); return; }
+
+  const valid = items.filter(x=>x.ma && x.sldat && parseFloat(x.sldat)>0);
+  if(valid.length===0){
+    toast("⚠️ Chưa có mặt hàng nào có SL cần đặt","err"); return;
+  }
+
+  const prods = PRODUCTS[cat]||[];
+  const now = new Date();
+  const lines = valid.map(item=>{
+    const prod = prods.find(p=>p.ma===item.ma);
+    return {
+      timestamp:    now.toISOString(),
+      ngay:         now.toLocaleDateString("vi-VN"),
+      gio:          now.toLocaleTimeString("vi-VN"),
+      chi_nhanh:    cn,
+      nguoi_dat:    nd,
+      nhom_hang:    CAT_LABEL[cat]||cat,
+      ma_hang:      item.ma,
+      ten_hang:     prod ? prod.ten : "",
+      dvt:          prod ? prod.dvt : "",
+      sl_ton:       parseFloat(item.slt)||0,
+      sl_dat:       parseFloat(item.sldat),
+      ghi_chu_don:  note,
+    };
+  });
+
+  const btn = document.getElementById("submit-btn");
+  btn.disabled=true; btn.innerHTML="⏳ Đang gửi...";
+
+  try {
+    const res = await fetch(N8N_WEBHOOK, {
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({ orders: lines,
+        meta:{ cn, nguoi_dat:nd, cat, total:lines.length, sent_at:now.toISOString() }
+      })
+    });
+    if(res.ok){
+      document.getElementById("form-wrap").style.display="none";
+      document.getElementById("success-wrap").style.display="block";
+      document.getElementById("success-detail").textContent =
+        `${cn} — ${lines.length} mặt hàng gửi lúc ${now.toLocaleTimeString("vi-VN")}`;
+    } else { throw new Error("HTTP "+res.status); }
+  } catch(e){
+    // Demo mode khi chưa có webhook
+    toast(`✅ Demo: ${lines.length} món — webhook chưa cấu hình`,"ok");
+    console.log("📦 Order payload:", JSON.stringify(lines, null, 2));
+  } finally {
+    btn.disabled=false; btn.innerHTML="📤 Gửi đơn hàng";
+  }
+}
+
+function resetForm(){
+  document.getElementById("form-wrap").style.display="block";
+  document.getElementById("success-wrap").style.display="none";
+  ["chinhanh","nguoidat","category","ghichu"].forEach(id=>document.getElementById(id).value="");
+  document.getElementById("cat-helper").textContent="";
+  document.getElementById("add-btn").disabled=true;
+  items=[]; currentCat=""; renderItems();
+}
+</script>
+</body>
+</html>
